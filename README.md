@@ -42,6 +42,8 @@ feature1,feature2,feature3,feature4,label
 ...
 ```
 
+**Sample Data**: [Download sample_data.csv](data/sample_data.csv) - A sample dataset with 200 samples, 10 features, and 3 categories for testing.
+
 ## Output
 
 The dashboard provides:
