@@ -1,8 +1,3 @@
-"""
-Streamlit web dashboard for interactive PCA analysis.
-Allows users to upload CSV files and perform PCA analysis with interactive controls.
-"""
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -12,21 +7,18 @@ from io import StringIO
 import sys
 from pathlib import Path
 
-# Add src to path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from data_loader import prepare_data_from_dataframe
 from pca_analyzer import standardize_data, compute_pca, get_variance_metrics
 
 
-# Page configuration
 st.set_page_config(
     page_title="PCA Dashboard",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
 st.markdown("""
     <style>
     .main-header {
@@ -45,7 +37,6 @@ st.markdown("""
 
 
 def create_interactive_variance_bar(explained_variance_ratio, n_components_to_show):
-    """Create interactive bar chart for explained variance."""
     components_to_show = min(n_components_to_show, len(explained_variance_ratio))
     variance_to_show = explained_variance_ratio[:components_to_show]
     component_numbers = list(range(1, components_to_show + 1))
@@ -74,14 +65,12 @@ def create_interactive_variance_bar(explained_variance_ratio, n_components_to_sh
 
 
 def create_interactive_cumulative_variance(cumulative_variance, n_components_to_show):
-    """Create interactive line chart for cumulative variance."""
     components_to_show = min(n_components_to_show, len(cumulative_variance))
     variance_to_show = cumulative_variance[:components_to_show]
     component_numbers = list(range(1, components_to_show + 1))
     
     fig = go.Figure()
     
-    # Add cumulative variance line
     fig.add_trace(go.Scatter(
         x=component_numbers,
         y=variance_to_show * 100,
@@ -92,7 +81,6 @@ def create_interactive_cumulative_variance(cumulative_variance, n_components_to_
         hovertemplate='Components: %{x}<br>Cumulative Variance: %{y:.2f}%<extra></extra>'
     ))
     
-    # Add threshold lines
     fig.add_hline(y=80, line_dash="dash", line_color="orange", 
                   annotation_text="80% threshold", annotation_position="right")
     fig.add_hline(y=95, line_dash="dash", line_color="red",
@@ -112,7 +100,6 @@ def create_interactive_cumulative_variance(cumulative_variance, n_components_to_
 
 
 def create_interactive_scatter(transformed_data, labels, label_column_name):
-    """Create interactive 2D scatter plot of first two principal components."""
     pc1 = transformed_data[:, 0]
     pc2 = transformed_data[:, 1]
     
@@ -149,22 +136,18 @@ def create_interactive_scatter(transformed_data, labels, label_column_name):
 
 
 def main():
-    # Header
     st.markdown('<div class="main-header">PCA Dashboard</div>', unsafe_allow_html=True)
     st.markdown("Upload a CSV file to perform Principal Component Analysis (PCA) on your data.")
     
-    # Sidebar for file upload and settings
     with st.sidebar:
         st.header("Data Input")
         
-        # File upload
         uploaded_file = st.file_uploader(
             "Choose a CSV file",
             type=['csv'],
             help="Upload a CSV file with numeric features. Optionally include categorical columns for labeling."
         )
         
-        # Sample data info
         st.caption("Tip: Use `data/sample_data.csv` to try with sample data")
         
         st.markdown("---")
@@ -172,7 +155,6 @@ def main():
         if uploaded_file is not None:
             st.header("Analysis Settings")
             
-            # Number of components
             max_components = st.number_input(
                 "Number of Components",
                 min_value=1,
@@ -182,7 +164,6 @@ def main():
             if max_components == 0:
                 max_components = None
             
-            # Components to show
             components_to_show = st.number_input(
                 "Components to Display in Plots",
                 min_value=1,
@@ -194,13 +175,10 @@ def main():
             
             st.markdown("---")
     
-    # Main content area
     if uploaded_file is not None:
         try:
-            # Load data
             df = pd.read_csv(uploaded_file)
             
-            # Data preview
             with st.expander("Data Preview", expanded=True):
                 col1, col2, col3 = st.columns(3)
                 with col1:
@@ -213,14 +191,12 @@ def main():
                 
                 st.dataframe(df.head(10), use_container_width=True)
             
-            # Prepare data
             try:
                 numeric_df, label_col, original_df = prepare_data_from_dataframe(df)
                 
                 if label_col:
                     st.info(f"Label column detected: **{label_col}** (will be used for coloring points)")
                 
-                # Standardize and compute PCA
                 with st.spinner("Performing PCA analysis..."):
                     standardized_data = standardize_data(numeric_df)
                     
@@ -229,7 +205,6 @@ def main():
                     
                     explained_variance_ratio, cumulative_variance = get_variance_metrics(pca)
                 
-                # Summary metrics
                 st.markdown("---")
                 st.header("Analysis Results")
                 
@@ -247,7 +222,6 @@ def main():
                     comps_95 = (idx_95 + 1) if idx_95 is not None else "N/A"
                     st.metric("Components for 95% Variance", comps_95)
                 
-                # Variance table
                 with st.expander("Detailed Variance Breakdown"):
                     variance_df = pd.DataFrame({
                         'Component': [f'PC{i+1}' for i in range(len(explained_variance_ratio))],
@@ -256,24 +230,19 @@ def main():
                     })
                     st.dataframe(variance_df, use_container_width=True, hide_index=True)
                 
-                # Visualizations
                 st.markdown("---")
                 st.header("Visualizations")
                 
-                # Set components to show
                 n_show = components_to_show if components_to_show else pca.n_components_
                 
-                # Explained variance bar chart
                 st.subheader("Explained Variance by Component")
                 fig_bar = create_interactive_variance_bar(explained_variance_ratio, n_show)
                 st.plotly_chart(fig_bar, use_container_width=True)
                 
-                # Cumulative variance line chart
                 st.subheader("Cumulative Explained Variance")
                 fig_line = create_interactive_cumulative_variance(cumulative_variance, n_show)
                 st.plotly_chart(fig_line, use_container_width=True)
                 
-                # 2D Scatter plot
                 if transformed_data.shape[1] >= 2:
                     st.subheader("2D Projection (First Two Components)")
                     labels_array = original_df[label_col].values if label_col else None
@@ -284,11 +253,9 @@ def main():
                 else:
                     st.warning("Need at least 2 principal components for scatter plot.")
                 
-                # Download results
                 st.markdown("---")
                 st.header("Download Results")
                 
-                # Prepare transformed data for download
                 transformed_df = pd.DataFrame(
                     transformed_data,
                     columns=[f'PC{i+1}' for i in range(transformed_data.shape[1])]
@@ -317,7 +284,6 @@ def main():
             st.info("Please make sure you've uploaded a valid CSV file.")
     
     else:
-        # Welcome screen
         st.info("Please upload a CSV file using the sidebar to get started.")
         
         with st.expander("How to use this dashboard"):
@@ -356,4 +322,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

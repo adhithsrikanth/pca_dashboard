@@ -79,15 +79,6 @@ pca_dashboard/
 └── README.md              # This file
 ```
 
-## Example Workflow
-
-1. **Prepare your data**: Ensure your CSV has numeric features
-2. **Run analysis**: `python dashboard.py data/my_data.csv`
-3. **Review summary**: Check the console output for variance metrics
-4. **Examine plots**: Look for patterns in the scatter plot and variance distribution
-5. **Decide on components**: Use the cumulative variance chart to choose how many components to retain
-6. **Save results**: Use `--save` to export figures for reports
-
 ## Interpreting Results
 
 ### Explained Variance Bar Chart

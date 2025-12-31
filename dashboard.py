@@ -1,14 +1,8 @@
-"""
-Main dashboard script for PCA analysis.
-Provides an interactive interface to analyze high-dimensional data using PCA.
-"""
-
 import argparse
 import sys
 import os
 from pathlib import Path
 
-# Add src to path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from data_loader import prepare_data
@@ -18,7 +12,6 @@ import matplotlib.pyplot as plt
 
 
 def print_summary(results: dict):
-    """Print a summary of the PCA analysis."""
     print("\n" + "="*60)
     print("PCA ANALYSIS SUMMARY")
     print("="*60)
@@ -34,7 +27,6 @@ def print_summary(results: dict):
         cum_var_pct = results['cumulative_variance'][i] * 100
         print(f"PC{i+1:2d}: {var_pct:6.2f}% (Cumulative: {cum_var_pct:6.2f}%)")
     
-    # Find components needed for 80% and 95% variance
     cum_var = results['cumulative_variance']
     idx_80 = next((i for i, v in enumerate(cum_var) if v >= 0.80), None)
     idx_95 = next((i for i, v in enumerate(cum_var) if v >= 0.95), None)
@@ -48,7 +40,6 @@ def print_summary(results: dict):
 
 
 def main():
-    """Main dashboard function."""
     parser = argparse.ArgumentParser(
         description='PCA Dashboard: Dimensionality Reduction and Variance Analysis',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -85,17 +76,14 @@ Examples:
     
     args = parser.parse_args()
     
-    # Validate file exists
     if not os.path.exists(args.data_file):
         print(f"Error: File not found: {args.data_file}")
         sys.exit(1)
     
-    # Create save directory if specified
     if args.save:
         os.makedirs(args.save, exist_ok=True)
     
     try:
-        # Load and prepare data
         print("Loading data...")
         numeric_df, label_col, original_df = prepare_data(args.data_file)
         print(f"Loaded {len(numeric_df)} rows with {len(numeric_df.columns)} numeric features")
@@ -103,18 +91,14 @@ Examples:
         if label_col:
             print(f"Found label column: {label_col}")
         
-        # Standardize data
         print("Standardizing data...")
         standardized_data = standardize_data(numeric_df)
         
-        # Apply PCA
         print(f"Applying PCA{' with ' + str(args.components) + ' components' if args.components else ''}...")
         pca, transformed_data = compute_pca(standardized_data, args.components)
         
-        # Get variance metrics
         explained_variance_ratio, cumulative_variance = get_variance_metrics(pca)
         
-        # Prepare results dictionary
         results = {
             'pca': pca,
             'transformed_data': transformed_data,
@@ -127,10 +111,8 @@ Examples:
             'original_data': numeric_df
         }
         
-        # Print summary
         print_summary(results)
         
-        # Create visualizations
         print("Creating visualizations...")
         n_show = args.show_components if args.show_components else results['n_components']
         figs = create_dashboard(results, n_components_to_show=n_show, save_dir=args.save)
@@ -138,7 +120,6 @@ Examples:
         if args.save:
             print(f"Figures saved to {args.save}/")
         
-        # Display plots
         if not args.no_display:
             print("Displaying plots...")
             plt.show()
@@ -155,4 +136,3 @@ Examples:
 
 if __name__ == '__main__':
     main()
-

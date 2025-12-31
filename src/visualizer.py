@@ -1,8 +1,3 @@
-"""
-Visualization module for PCA dashboard.
-Creates bar charts, line charts, and scatter plots.
-"""
-
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import Optional
@@ -11,14 +6,6 @@ from typing import Optional
 def plot_explained_variance_bar(explained_variance_ratio: np.ndarray, 
                                 n_components_to_show: Optional[int] = None,
                                 save_path: Optional[str] = None):
-    """
-    Create a bar chart showing explained variance per component.
-    
-    Args:
-        explained_variance_ratio: Array of explained variance ratios
-        n_components_to_show: Number of components to display (None for all)
-        save_path: Optional path to save the figure
-    """
     if n_components_to_show is None:
         n_components_to_show = len(explained_variance_ratio)
     
@@ -31,7 +18,6 @@ def plot_explained_variance_bar(explained_variance_ratio: np.ndarray,
     bars = ax.bar(component_numbers, variance_to_show * 100, 
                   color='steelblue', alpha=0.7, edgecolor='black')
     
-    # Add percentage labels on bars
     for i, (bar, var) in enumerate(zip(bars, variance_to_show)):
         height = bar.get_height()
         ax.text(bar.get_x() + bar.get_width()/2., height,
@@ -56,14 +42,6 @@ def plot_explained_variance_bar(explained_variance_ratio: np.ndarray,
 def plot_cumulative_variance(cumulative_variance: np.ndarray,
                             n_components_to_show: Optional[int] = None,
                             save_path: Optional[str] = None):
-    """
-    Create a line chart showing cumulative explained variance.
-    
-    Args:
-        cumulative_variance: Array of cumulative explained variance
-        n_components_to_show: Number of components to display (None for all)
-        save_path: Optional path to save the figure
-    """
     if n_components_to_show is None:
         n_components_to_show = len(cumulative_variance)
     
@@ -76,14 +54,12 @@ def plot_cumulative_variance(cumulative_variance: np.ndarray,
     ax.plot(component_numbers, variance_to_show * 100, 
             marker='o', linewidth=2, markersize=8, color='darkgreen')
     
-    # Add percentage labels at key points
     for i, var in enumerate(variance_to_show):
         if i == 0 or i == len(variance_to_show) - 1 or i % max(1, len(variance_to_show) // 10) == 0:
             ax.text(component_numbers[i], var * 100,
                    f'{var*100:.1f}%',
                    ha='center', va='bottom', fontsize=9)
     
-    # Add horizontal line at 80% and 95% thresholds
     ax.axhline(y=80, color='orange', linestyle='--', alpha=0.5, label='80% threshold')
     ax.axhline(y=95, color='red', linestyle='--', alpha=0.5, label='95% threshold')
     
@@ -108,15 +84,6 @@ def plot_pca_scatter(transformed_data: np.ndarray,
                     labels: Optional[np.ndarray] = None,
                     label_column_name: Optional[str] = None,
                     save_path: Optional[str] = None):
-    """
-    Create a 2D scatter plot of the first two principal components.
-    
-    Args:
-        transformed_data: PCA-transformed data
-        labels: Optional array of labels for coloring points
-        label_column_name: Name of the label column (for legend)
-        save_path: Optional path to save the figure
-    """
     if transformed_data.shape[1] < 2:
         raise ValueError("Need at least 2 principal components for scatter plot")
     
@@ -159,18 +126,9 @@ def plot_pca_scatter(transformed_data: np.ndarray,
 
 def create_dashboard(results: dict, n_components_to_show: Optional[int] = None,
                     save_dir: Optional[str] = None):
-    """
-    Create all visualizations for the PCA dashboard.
-    
-    Args:
-        results: Dictionary containing PCA results from analyze_pca()
-        n_components_to_show: Number of components to display
-        save_dir: Optional directory to save figures
-    """
     if n_components_to_show is None:
         n_components_to_show = results['n_components']
     
-    # Create all three visualizations
     fig1 = plot_explained_variance_bar(
         results['explained_variance_ratio'],
         n_components_to_show,
@@ -191,4 +149,3 @@ def create_dashboard(results: dict, n_components_to_show: Optional[int] = None,
     )
     
     return fig1, fig2, fig3
-
