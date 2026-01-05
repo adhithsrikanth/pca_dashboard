@@ -1,0 +1,7 @@
+# Ignore patterns for Cursor
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
